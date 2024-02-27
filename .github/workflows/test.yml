@@ -1,0 +1,72 @@
+name: Test
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    types:
+      - opened
+      - synchronize
+  workflow_dispatch:
+  schedule:
+    # cron every week on monday
+    - cron: "0 0 * * 1"
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        image:
+          - name: latest
+            python_version: "3.11"
+          - name: python3.11
+            python_version: "3.11"
+          - name: python3.10
+            python_version: "3.10"
+          - name: python3.9
+            python_version: "3.9"
+          - name: python3.8
+            python_version: "3.8"
+          - name: python3.7
+            python_version: "3.7"
+          - name: python3.11-slim
+            python_version: "3.11"
+          - name: python3.10-slim
+            python_version: "3.10"
+          - name: python3.9-slim
+            python_version: "3.9"
+          - name: python3.8-slim
+            python_version: "3.8"
+          - name: python3.9-alpine3.14
+            python_version: "3.9"
+          - name: python3.8-alpine3.10
+            python_version: "3.8"
+          - name: python3.7-alpine3.8
+            python_version: "3.7"
+      fail-fast: true
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4.3.0
+        with:
+          python-version: "3.7"
+      - name: Install Dependencies
+        run: python3.7 -m pip install "docker>=4.4.4,<5.0.0" "pytest>=6.2.4,<7.0.0"
+      - name: Test Image
+        run: bash scripts/test.sh
+        env:
+          NAME: ${{ matrix.image.name }}
+          DOCKERFILE: ${{ matrix.image.dockerfile }}
+          PYTHON_VERSION: ${{ matrix.image.python_version }}
+  check:
+    if: always()
+    needs:
+    - build
+    runs-on: ubuntu-latest
+    steps:
+    - name: Decide whether the needed jobs succeeded or failed
+      uses: re-actors/alls-green@release/v1
+      with:
+        jobs: ${{ toJSON(needs) }}
