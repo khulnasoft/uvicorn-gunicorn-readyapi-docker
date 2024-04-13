@@ -775,6 +775,8 @@ All the image tags, configurations, environment variables and application option
 
 ### Latest Changes
 
+* Develop (#1). PR [#17](https://github.com/khulnasoft/uvicorn-gunicorn-readyapi-docker/pull/17) by [@FortiShield](https://github.com/FortiShield).
+
 #### Docs
 
 * 📝 Add security policy. PR [#283](https://github.com/khulnasoft/uvicorn-gunicorn-readyapi-docker/pull/283) by [@khulnasoft](https://github.com/khulnasoft).
