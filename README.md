@@ -775,6 +775,7 @@ All the image tags, configurations, environment variables and application option
 
 ### Latest Changes
 
+* ⬆ Bump gunicorn from 21.2.0 to 22.0.0. PR [#20](https://github.com/khulnasoft/uvicorn-gunicorn-readyapi-docker/pull/20) by [@dependabot[bot]](https://github.com/apps/dependabot).
 * Develop (#1). PR [#17](https://github.com/khulnasoft/uvicorn-gunicorn-readyapi-docker/pull/17) by [@FortiShield](https://github.com/FortiShield).
 
 #### Docs
