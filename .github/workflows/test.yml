@@ -68,7 +68,7 @@ jobs:
         if: matrix.check == 'format'
         run: |
           black --diff tests/ docker-images/app/
-          isort --diff-only tests/ docker-images/app/
+          isort --diff tests/ docker-images/app/
       - name: Run mypy
         if: matrix.check == 'mypy'
         run: mypy tests/
