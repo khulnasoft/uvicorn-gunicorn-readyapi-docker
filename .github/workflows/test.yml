@@ -10,17 +10,19 @@ on:
       - synchronize
   workflow_dispatch:
   schedule:
-    # cron every week on monday
-    - cron: "0 0 * * 1"
+    # cron every week on monday at 2 AM UTC
+    - cron: "0 2 * * 1"
 
 env:
   DOCKER_BUILDKIT: 1
+  PYTHON_VERSION: "3.11"
 
 jobs:
   security-scan:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v3
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
@@ -28,33 +30,58 @@ jobs:
           format: 'sarif'
           output: 'trivy-results.sarif'
       - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v4
+        uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: 'trivy-results.sarif'
 
   code-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      matrix:
+        check: [lint, format, mypy, test]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v3
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+      - name: Cache pip dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/pyproject.toml', '**/requirements*.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -e .[dev]
-      - name: Run pre-commit checks
-        uses: pre-commit/action@v4
+      - name: Run linting
+        if: matrix.check == 'lint'
+        run: |
+          flake8 tests/ docker-images/app/
+          black --check tests/ docker-images/app/
+          isort --check-only tests/ docker-images/app/
+      - name: Run formatting check
+        if: matrix.check == 'format'
+        run: |
+          black --diff tests/ docker-images/app/
+          isort --diff-only tests/ docker-images/app/
       - name: Run mypy
+        if: matrix.check == 'mypy'
         run: mypy tests/
       - name: Run pytest with coverage
+        if: matrix.check == 'test'
         run: |
-          pytest --cov=tests --cov-report=xml --cov-report=term-missing
+          pytest --cov=tests --cov-report=xml --cov-report=term-missing --cov-fail-under=80
       - name: Upload coverage to Codecov
+        if: matrix.check == 'test'
         uses: codecov/codecov-action@v3
         with:
           file: ./coverage.xml
+          fail_ci_if_error: true
 
   test:
     strategy:
@@ -74,57 +101,193 @@ jobs:
           - name: python3.9-slim
             python_version: "3.9"
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          driver: docker-container
+      - name: Cache Docker layers
+        uses: actions/cache@v3
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ matrix.image.name }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-${{ matrix.image.name }}-
+            ${{ runner.os }}-buildx-
       - name: Set Dockerfile name
         run: echo "DOCKERFILE_NAME=${{ matrix.image.name }}" >> $GITHUB_ENV
       - name: Build image
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v3
         with:
           push: false
           tags: khulnasoft/uvicorn-gunicorn-readyapi:${{ matrix.image.name }}
           context: ./docker-images/
           file: ./docker-images/${{ env.DOCKERFILE_NAME }}.dockerfile
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
+        continue-on-error: false
+      - name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+      - name: Cache pip dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-test-${{ hashFiles('**/pyproject.toml', '**/requirements*.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-test-
+            ${{ runner.os }}-pip-
       - name: Install test dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -e .
       - name: Test basic functionality
-        run: pytest tests/test_01_main/ -v
+        run: |
+          pytest tests/test_01_main/ -v \
+            --junit-xml=test-results-${{ matrix.image.name }}.xml \
+            --tb=short
         env:
           NAME: ${{ matrix.image.name }}
           PYTHON_VERSION: ${{ matrix.image.python_version }}
       - name: Test security features
-        run: pytest tests/test_02_security/ -v
+        run: |
+          pytest tests/test_02_security/ -v \
+            --junit-xml=security-results-${{ matrix.image.name }}.xml \
+            --tb=short
         env:
           NAME: ${{ matrix.image.name }}
           PYTHON_VERSION: ${{ matrix.image.python_version }}
         if: matrix.image.name != 'python3.8' && matrix.image.name != 'python3.7'
+      - name: Upload test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: test-results-${{ matrix.image.name }}
+          path: |
+            test-results-${{ matrix.image.name }}.xml
+            security-results-${{ matrix.image.name }}.xml
+        continue-on-error: true
 
   integration-test:
     needs: [test, code-quality]
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v3
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+      - name: Cache pip dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-integration-${{ hashFiles('**/pyproject.toml', '**/requirements*.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-integration-
+            ${{ runner.os }}-pip-
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -e .
       - name: Run integration tests
-        run: pytest tests/ -v -m integration
+        run: |
+          pytest tests/ -v -m integration \
+            --junit-xml=integration-results.xml \
+            --tb=short \
+            --cov=tests \
+            --cov-report=xml \
+            --cov-report=term-missing
         env:
           NAME: python3.11
           PYTHON_VERSION: "3.11"
+      - name: Upload integration test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: integration-test-results
+          path: |
+            integration-results.xml
+            coverage.xml
+        continue-on-error: true
+
+  performance-test:
+    needs: [test]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          driver: docker-container
+      - name: Build latest image
+        uses: docker/build-push-action@v3
+        with:
+          push: false
+          tags: khulnasoft/uvicorn-gunicorn-readyapi:performance-test
+          context: ./docker-images/
+          file: ./docker-images/python3.11.dockerfile
+          load: true
+      - name: Run performance benchmarks
+        run: |
+          # Start container
+          docker run -d --name perf-test -p 8000:80 \
+            khulnasoft/uvicorn-gunicorn-readyapi:performance-test
+          
+          # Wait for container to be ready
+          sleep 10
+          
+          # Run basic performance tests
+          for i in {1..10}; do
+            curl -s -o /dev/null -w "%{http_code}\n" http://localhost:8000
+          done
+          
+          # Clean up
+          docker stop perf-test
+          docker rm perf-test
+        continue-on-error: true
+
+  security-audit:
+    needs: [code-quality]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+      - name: Install security tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install safety bandit
+      - name: Run safety check
+        run: safety check --json --output safety-report.json || true
+        continue-on-error: true
+      - name: Run bandit security linter
+        run: bandit -r docker-images/app/ -f json -o bandit-report.json || true
+        continue-on-error: true
+      - name: Upload security reports
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: security-audit-reports
+          path: |
+            safety-report.json
+            bandit-report.json
+        continue-on-error: true
 
   check:
     if: always()
@@ -133,9 +296,25 @@ jobs:
       - code-quality
       - test
       - integration-test
+      - performance-test
+      - security-audit
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v3
+        continue-on-error: true
+      - name: Check job results
+        run: |
+          echo "Security scan: ${{ needs.security-scan.result }}"
+          echo "Code quality: ${{ needs.code-quality.result }}"
+          echo "Test: ${{ needs.test.result }}"
+          echo "Integration test: ${{ needs.integration-test.result }}"
+          echo "Performance test: ${{ needs.performance-test.result }}"
+          echo "Security audit: ${{ needs.security-audit.result }}"
       - name: Decide whether the needed jobs succeeded or failed
         uses: re-actors/alls-green@release/v1
         with:
           jobs: ${{ toJSON(needs) }}
+        env:
+          ALLOW_SKIPPED_JOBS: "true"

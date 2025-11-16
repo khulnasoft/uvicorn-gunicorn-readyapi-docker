@@ -1,8 +1,8 @@
 import logging
 import sys
-from typing import Dict, Any
+from typing import Any, Dict
 
-from readyapi import ReadyAPI, HTTPException
+from readyapi import HTTPException, ReadyAPI
 from readyapi.middleware.cors import CORSMiddleware
 from readyapi.middleware.trustedhost import TrustedHostMiddleware
 from readyapi.responses import JSONResponse

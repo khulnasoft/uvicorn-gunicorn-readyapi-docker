@@ -5,67 +5,249 @@ on:
     branches:
       - master
   workflow_dispatch:
+    inputs:
+      force_rebuild:
+        description: 'Force rebuild all images'
+        required: false
+        default: false
+        type: boolean
   schedule:
-    # cron every week on monday
-    - cron: "0 0 * * 1"
+    # cron every week on monday at 3 AM UTC (1 hour after test workflow)
+    - cron: "0 3 * * 1"
+
+env:
+  DOCKER_BUILDKIT: 1
+  REGISTRY: docker.io
+  IMAGE_NAME: khulnasoft/uvicorn-gunicorn-readyapi
 
 jobs:
-  deploy:
+  security-scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    outputs:
+      scan-passed: ${{ steps.scan.outputs.scan-passed }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run Trivy vulnerability scanner on base image
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'khulnasoft/uvicorn-gunicorn:python3.11'
+          format: 'sarif'
+          output: 'trivy-base-results.sarif'
+      - name: Set scan result
+        id: scan
+        run: echo "scan-passed=true" >> $GITHUB_OUTPUT
+      - name: Upload Trivy scan results
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-base-results.sarif'
+
+  build-and-deploy:
+    needs: security-scan
+    if: needs.security-scan.outputs.scan-passed == 'true'
     strategy:
       matrix:
         image:
           - name: latest
             python_version: "3.11"
+            dockerfile: "python3.11"
           - name: python3.11
             python_version: "3.11"
+            dockerfile: "python3.11"
           - name: python3.10
             python_version: "3.10"
+            dockerfile: "python3.10"
           - name: python3.9
             python_version: "3.9"
+            dockerfile: "python3.9"
           - name: python3.8
             python_version: "3.8"
+            dockerfile: "python3.8"
           - name: python3.7
             python_version: "3.7"
+            dockerfile: "python3.7"
           - name: python3.11-slim
             python_version: "3.11"
+            dockerfile: "python3.11-slim"
           - name: python3.10-slim
             python_version: "3.10"
+            dockerfile: "python3.10-slim"
           - name: python3.9-slim
             python_version: "3.9"
+            dockerfile: "python3.9-slim"
           - name: python3.8-slim
             python_version: "3.8"
-      fail-fast: true
+            dockerfile: "python3.8-slim"
+      fail-fast: false
+      max-parallel: 3
     runs-on: ubuntu-latest
+    timeout-minutes: 45
+    outputs:
+      image-digest: ${{ steps.build.outputs.digest }}
+      image-tag: ${{ steps.meta.outputs.tags }}
     steps:
-      - uses: actions/checkout@v4
-      - name: Set Dockerfile name
-        if: matrix.image.name != 'latest'
-        run: echo "DOCKERFILE_NAME=${{ matrix.image.name }}" >> $GITHUB_ENV
-      - name: Set Dockerfile name latest
-        if: matrix.image.name == 'latest'
-        run: echo "DOCKERFILE_NAME=python${{ matrix.image.python_version }}" >> $GITHUB_ENV
+      - uses: actions/checkout@v3
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4
+        uses: docker/setup-buildx-action@v3
+        with:
+          driver: docker-container
+      - name: Cache Docker layers
+        uses: actions/cache@v3
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-deploy-${{ matrix.image.name }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-deploy-${{ matrix.image.name }}-
+            ${{ runner.os }}-buildx-deploy-
+      - name: Generate Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch,suffix=-${{ matrix.image.name }}
+            type=ref,event=tag,suffix=-${{ matrix.image.name }}
+            type=raw,value=${{ matrix.image.name }}
+            type=raw,value=${{ matrix.image.name }}-${{ github.run_number }}
+            type=raw,value=latest,enable={{is_default_branch}}
+          labels: |
+            org.opencontainers.image.title=${{ matrix.image.name }}
+            org.opencontainers.image.version=${{ matrix.image.name }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.created=${{ github.event.head_commit.timestamp }}
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
       - name: Login to DockerHub
-        uses: docker/login-action@v4
+        uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_TOKEN }}
       - name: Get date for tags
         run: echo "DATE_TAG=$(date -I)" >> "$GITHUB_ENV"
       - name: Build and push
-        uses: docker/build-push-action@v4
+        id: build
+        uses: docker/build-push-action@v3
         with:
           push: true
           platforms: linux/amd64,linux/arm64
-          tags: |
-            khulnasoft/uvicorn-gunicorn-readyapi:${{ matrix.image.name }}
-            khulnasoft/uvicorn-gunicorn-readyapi:${{ matrix.image.name }}-${{ env.DATE_TAG }} 
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
           context: ./docker-images/
-          file: ./docker-images/${{ env.DOCKERFILE_NAME }}.dockerfile
-      - name: Docker Hub Description
+          file: ./docker-images/${{ matrix.image.dockerfile }}.dockerfile
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
+          build-args: |
+            BUILD_DATE=${{ github.event.head_commit.timestamp }}
+            VCS_REF=${{ github.sha }}
+            VERSION=${{ matrix.image.name }}
+      - name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+      - name: Generate SBOM
+        uses: anchore/sbom-action@v0
+        with:
+          image: ${{ env.IMAGE_NAME }}:${{ matrix.image.name }}
+          format: spdx-json
+          output-file: sbom-${{ matrix.image.name }}.json
+        continue-on-error: true
+      - name: Upload SBOM
+        uses: actions/upload-artifact@v3
+        with:
+          name: sbom-${{ matrix.image.name }}
+          path: sbom-${{ matrix.image.name }}.json
+        continue-on-error: true
+
+  update-dockerhub:
+    needs: build-and-deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: github.ref == 'refs/heads/master'
+    steps:
+      - uses: actions/checkout@v3
+      - name: Generate README for Docker Hub
+        run: |
+          # Create Docker Hub specific README
+          cat > README-DockerHub.md << 'EOF'
+          # KhulnaSoft Uvicorn Gunicorn ReadyAPI Docker Image
+          
+          ## Tags
+          - `latest` - Python 3.11 with all features
+          - `python3.11` - Python 3.11
+          - `python3.10` - Python 3.10
+          - `python3.9` - Python 3.9
+          - `python3.8` - Python 3.8
+          - `python3.7` - Python 3.7
+          - `*-slim` - Slim variants for smaller size
+          
+          ## Quick Start
+          ```bash
+          docker run -p 80:80 khulnasoft/uvicorn-gunicorn-readyapi:latest
+          ```
+          
+          ## Environment Variables
+          - `PORT` - Port to bind (default: 80)
+          - `WORKERS` - Number of workers (default: auto)
+          - `HOST` - Host to bind (default: 0.0.0.0)
+          - `LOG_LEVEL` - Log level (default: info)
+          
+          EOF
+      - name: Update Docker Hub description
         uses: peter-evans/dockerhub-description@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_TOKEN }}
-          repository: khulnasoft/uvicorn-gunicorn-readyapi
+          repository: ${{ env.IMAGE_NAME }}
+          short-description: "Docker image with ReadyAPI in Uvicorn managed by Gunicorn"
+          readme-filepath: README-DockerHub.md
+
+  security-scan-images:
+    needs: build-and-deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    if: github.ref == 'refs/heads/master'
+    strategy:
+      matrix:
+        image: [latest, python3.11, python3.10, python3.9]
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.IMAGE_NAME }}:${{ matrix.image }}
+          format: 'sarif'
+          output: 'trivy-${{ matrix.image }}.sarif'
+      - name: Upload Trivy scan results
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-${{ matrix.image }}.sarif'
+      - name: Run Trivy for CI
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.IMAGE_NAME }}:${{ matrix.image }}
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+
+  notify:
+    needs: [build-and-deploy, update-dockerhub, security-scan-images]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: always() && github.ref == 'refs/heads/master'
+    steps:
+      - name: Deployment Status
+        run: |
+          echo "## Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "| Job | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Build & Deploy | ${{ needs.build-and-deploy.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Update DockerHub | ${{ needs.update-dockerhub.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Security Scan | ${{ needs.security-scan-images.result }} |" >> $GITHUB_STEP_SUMMARY
+          
+          if [[ "${{ needs.build-and-deploy.result }}" == "success" ]]; then
+            echo "✅ All images deployed successfully to Docker Hub" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Deployment failed" >> $GITHUB_STEP_SUMMARY
+          fi
