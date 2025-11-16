@@ -27,7 +27,7 @@ jobs:
     outputs:
       scan-passed: ${{ steps.scan.outputs.scan-passed }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Run Trivy vulnerability scanner on base image
         uses: aquasecurity/trivy-action@master
         with:
@@ -71,13 +71,13 @@ jobs:
       image-digest: ${{ steps.build.outputs.digest }}
       image-tag: ${{ steps.meta.outputs.tags }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
         with:
           driver: docker-container
       - name: Cache Docker layers
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: /tmp/.buildx-cache
           key: ${{ runner.os }}-buildx-deploy-${{ matrix.image.name }}-${{ github.sha }}
@@ -148,7 +148,7 @@ jobs:
     timeout-minutes: 10
     if: github.ref == 'refs/heads/master'
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Generate README for Docker Hub
         run: |
           # Create Docker Hub specific README
@@ -194,7 +194,7 @@ jobs:
         image: [latest, python3.11, python3.10]
       fail-fast: false
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:

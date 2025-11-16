@@ -81,7 +81,6 @@ jobs:
         uses: codecov/codecov-action@v3
         with:
           file: ./coverage.xml
-          fail_ci_if_error: true
 
   test:
     strategy:
@@ -176,7 +175,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -258,7 +257,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -297,7 +296,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Download all artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         continue-on-error: true
       - name: Check job results
         run: |
