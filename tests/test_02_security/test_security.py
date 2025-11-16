@@ -95,7 +95,9 @@ def test_file_permissions() -> None:
         assert "777" not in output, "App directory should not be world-writable"
 
         # Check main.py is readable
-        result = container.exec_run("test -r /app/main.py || test -r /app/app/main.py")
+        result = container.exec_run(
+            "sh -c 'test -r /app/main.py || test -r /app/app/main.py'"
+        )
         assert result.exit_code == 0, "Main application file should be readable"
 
     finally:
