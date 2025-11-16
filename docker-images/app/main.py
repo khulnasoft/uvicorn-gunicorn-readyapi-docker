@@ -63,7 +63,10 @@ async def general_exception_handler(request, exc):
 async def read_root() -> Dict[str, Any]:
     """Root endpoint with basic system information."""
     try:
-        message = f"Hello world! From ReadyAPI running on Uvicorn with Gunicorn. Using Python {version}"
+        message = (
+            f"Hello world! From ReadyAPI running on Uvicorn with Gunicorn. "
+            f"Using Python {version}"
+        )
         logger.info("Root endpoint accessed successfully")
         return {
             "message": message,

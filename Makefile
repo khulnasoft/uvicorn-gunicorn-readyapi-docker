@@ -92,7 +92,7 @@ format: ## Format code with black and isort
 
 lint: ## Run linting checks
 	@echo "🔍 Running linting checks..."
-	python3 -m flake8 tests/ docker-images/app/ --count --select=E9,F63,F7,F82 --show-source --statistics
+	python3 -m flake8 tests/ docker-images/app/ --count --select=E9,F63,F7,F82 --show-source --statistics --max-line-length=88
 	python3 -m flake8 tests/ docker-images/app/ --count --exit-zero --max-complexity=10 --max-line-length=88 --statistics
 	python3 -m mypy tests/
 	@echo "✅ Linting complete!"
