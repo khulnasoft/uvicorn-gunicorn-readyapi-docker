@@ -108,22 +108,52 @@ jobs:
           password: ${{ secrets.DOCKER_TOKEN }}
       - name: Get date for tags
         run: echo "DATE_TAG=$(date -I)" >> "$GITHUB_ENV"
-      - name: Build and push
+      - name: Build and push with retry
         id: build
-        uses: docker/build-push-action@v3
-        with:
-          push: true
-          platforms: linux/amd64,linux/arm64
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          context: ./docker-images/
-          file: ./docker-images/${{ matrix.image.dockerfile }}.dockerfile
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
-          build-args: |
-            BUILD_DATE=${{ github.event.head_commit.timestamp }}
-            VCS_REF=${{ github.sha }}
-            VERSION=${{ matrix.image.name }}
+        run: |
+          max_attempts=3
+          attempt=1
+          while [ $attempt -le $max_attempts ]; do
+            echo "Build attempt $attempt of $max_attempts"
+            
+            # Use docker/build-push-action but wrap it for retry
+            docker buildx build \
+              --push \
+              --platform linux/amd64,linux/arm64 \
+              --tag "${{ env.IMAGE_NAME }}:master-${{ matrix.image.name }}" \
+              --tag "${{ env.IMAGE_NAME }}:${{ matrix.image.name }}" \
+              --tag "${{ env.IMAGE_NAME }}:${{ matrix.image.name }}-${{ env.DATE_TAG }}" \
+              --label "org.opencontainers.image.created=${{ github.event.head_commit.timestamp }}" \
+              --label "org.opencontainers.image.description=" \
+              --label "org.opencontainers.image.licenses=MIT" \
+              --label "org.opencontainers.image.revision=${{ github.sha }}" \
+              --label "org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}" \
+              --label "org.opencontainers.image.title=${{ matrix.image.name }}" \
+              --label "org.opencontainers.image.url=${{ github.server_url }}/${{ github.repository }}" \
+              --label "org.opencontainers.image.version=${{ matrix.image.name }}" \
+              --cache-from type=local,src=/tmp/.buildx-cache \
+              --cache-to type=local,dest=/tmp/.buildx-cache-new,mode=max \
+              --build-arg BUILD_DATE="${{ github.event.head_commit.timestamp }}" \
+              --build-arg VCS_REF="${{ github.sha }}" \
+              --build-arg VERSION="${{ matrix.image.name }}" \
+              --file ./docker-images/${{ matrix.image.dockerfile }}.dockerfile \
+              ./docker-images/
+            
+            if [ $? -eq 0 ]; then
+              echo "Build successful on attempt $attempt"
+              echo "digest=$(docker buildx imagetools inspect ${{ env.IMAGE_NAME }}:${{ matrix.image.name }} --format '{{.Manifest.Digest}}')" >> $GITHUB_OUTPUT
+              break
+            else
+              echo "Build failed on attempt $attempt"
+              if [ $attempt -eq $max_attempts ]; then
+                echo "All $max_attempts attempts failed"
+                exit 1
+              fi
+              echo "Waiting 30 seconds before retry..."
+              sleep 30
+            fi
+            attempt=$((attempt + 1))
+          done
       - name: Move cache
         run: |
           rm -rf /tmp/.buildx-cache
