@@ -146,8 +146,8 @@ build: ## Build Docker image (default: python3.11)
 
 build-all: ## Build all Docker image variants
 	@echo "🏗️  Building all Docker image variants..."
-	@for version in python3.11 python3.10 python3.9 python3.8 python3.7 \
-		python3.11-slim python3.10-slim python3.9-slim python3.8-slim; do \
+	@for version in python3.11 python3.10 python3.8 python3.7 \
+		python3.11-slim python3.10-slim python3.8-slim; do \
 		echo "Building $$version..."; \
 		docker build -f docker-images/$$version.dockerfile \
 			--build-arg BUILD_DATE=$(shell date -u +"%Y-%m-%dT%H:%M:%SZ") \
@@ -254,7 +254,7 @@ docs-serve: ## Serve documentation locally
 # Validation
 validate: ## Validate Docker images and configuration
 	@echo "✅ Validating Docker images..."
-	@for version in python3.11 python3.10 python3.9; do \
+	@for version in python3.11 python3.10; do \
 		echo "Validating $$version..."; \
 		docker run --rm $(IMAGE_NAME):$$version python --version || echo "❌ $$version validation failed"; \
 	done

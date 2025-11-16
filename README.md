@@ -4,18 +4,18 @@
 
 * [`python3.11`, `latest` _(Dockerfile)_](https://github.com/khulnasoft/uvicorn-gunicorn-readyapi-docker/blob/master/docker-images/python3.11.dockerfile)
 * [`python3.10`, _(Dockerfile)_](https://github.com/khulnasoft/uvicorn-gunicorn-readyapi-docker/blob/master/docker-images/python3.10.dockerfile)
-* [`python3.9`, _(Dockerfile)_](https://github.com/khulnasoft/uvicorn-gunicorn-readyapi-docker/blob/master/docker-images/python3.9.dockerfile)
 * [`python3.8`, _(Dockerfile)_](https://github.com/khulnasoft/uvicorn-gunicorn-readyapi-docker/blob/master/docker-images/python3.8.dockerfile)
 * [`python3.7`, _(Dockerfile)_](https://github.com/khulnasoft/uvicorn-gunicorn-readyapi-docker/blob/master/docker-images/python3.7.dockerfile)
 * [`python3.11-slim` _(Dockerfile)_](https://github.com/khulnasoft/uvicorn-gunicorn-readyapi-docker/blob/master/docker-images/python3.11-slim.dockerfile)
 * [`python3.10-slim` _(Dockerfile)_](https://github.com/khulnasoft/uvicorn-gunicorn-readyapi-docker/blob/master/docker-images/python3.10-slim.dockerfile)
-* [`python3.9-slim` _(Dockerfile)_](https://github.com/khulnasoft/uvicorn-gunicorn-readyapi-docker/blob/master/docker-images/python3.9-slim.dockerfile)
 * [`python3.8-slim` _(Dockerfile)_](https://github.com/khulnasoft/uvicorn-gunicorn-readyapi-docker/blob/master/docker-images/python3.8-slim.dockerfile)
 
 ## Deprecated tags
 
 🚨 These tags are no longer supported or maintained, they are removed from the GitHub repository, but the last versions pushed might still be available in Docker Hub if anyone has been pulling them:
 
+* `python3.9`
+* `python3.9-slim`
 * `python3.9-alpine3.14`
 * `python3.8-alpine3.10`
 * `python3.7-alpine3.8`
@@ -63,7 +63,7 @@ In those cases (e.g. using Kubernetes) you would probably want to build a **Dock
 For example, your `Dockerfile` could look like:
 
 ```Dockerfile
-FROM python:3.9
+FROM python:3.11
 
 WORKDIR /code
 
@@ -296,7 +296,7 @@ Let's say you have a project managed with [Poetry](https://python-poetry.org/), 
 Then you could have a `Dockerfile` using Docker multi-stage building with:
 
 ```Dockerfile
-FROM python:3.9 as requirements-stage
+FROM python:3.11 as requirements-stage
 
 WORKDIR /tmp
 
@@ -833,7 +833,6 @@ Highlights of this release:
 #### Features
 
 * ✨ Add support for Python 3.10 and 3.11. PR [#220](https://github.com/khulnasoft/uvicorn-gunicorn-readyapi-docker/pull/220) by [@khulnasoft](https://github.com/khulnasoft).
-* ✨ Add Python 3.9 and Python 3.9 Alpine. PR [#67](https://github.com/khulnasoft/uvicorn-gunicorn-readyapi-docker/pull/67) by [@graue70](https://github.com/graue70).
 
 #### Breaking Changes
 

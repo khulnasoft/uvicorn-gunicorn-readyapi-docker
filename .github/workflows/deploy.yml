@@ -57,9 +57,6 @@ jobs:
           - name: python3.10
             python_version: "3.10"
             dockerfile: "python3.10"
-          - name: python3.9
-            python_version: "3.9"
-            dockerfile: "python3.9"
           - name: python3.8
             python_version: "3.8"
             dockerfile: "python3.8"
@@ -72,9 +69,6 @@ jobs:
           - name: python3.10-slim
             python_version: "3.10"
             dockerfile: "python3.10-slim"
-          - name: python3.9-slim
-            python_version: "3.9"
-            dockerfile: "python3.9-slim"
           - name: python3.8-slim
             python_version: "3.8"
             dockerfile: "python3.8-slim"
@@ -174,7 +168,6 @@ jobs:
           - `latest` - Python 3.11 with all features
           - `python3.11` - Python 3.11
           - `python3.10` - Python 3.10
-          - `python3.9` - Python 3.9
           - `python3.8` - Python 3.8
           - `python3.7` - Python 3.7
           - `*-slim` - Slim variants for smaller size
@@ -207,7 +200,7 @@ jobs:
     if: github.ref == 'refs/heads/master'
     strategy:
       matrix:
-        image: [latest, python3.11, python3.10, python3.9]
+        image: [latest, python3.11, python3.10]
       fail-fast: false
     steps:
       - uses: actions/checkout@v3

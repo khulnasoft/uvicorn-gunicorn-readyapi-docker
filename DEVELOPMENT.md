@@ -4,7 +4,7 @@
 
 ### Prerequisites
 - Docker
-- Python 3.9+
+- Python 3.10+
 - Git
 
 ### Local Development
@@ -96,7 +96,7 @@ The project includes automated security scanning:
 ### Supported Python Versions
 - Python 3.11 (recommended)
 - Python 3.10
-- Python 3.9
+- Python 3.10
 
 ### Deprecated Versions
 - Python 3.8 (EOL October 2024)
