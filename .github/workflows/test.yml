@@ -61,7 +61,7 @@ jobs:
       - name: Run linting
         if: matrix.check == 'lint'
         run: |
-          flake8 tests/ docker-images/app/
+          flake8 tests/ docker-images/app/ --max-line-length=88
           black --check tests/ docker-images/app/
           isort --check-only tests/ docker-images/app/
       - name: Run formatting check
