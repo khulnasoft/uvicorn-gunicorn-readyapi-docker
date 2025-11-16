@@ -145,7 +145,7 @@ jobs:
           output-file: sbom-${{ matrix.image.name }}.json
         continue-on-error: true
       - name: Upload SBOM
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: sbom-${{ matrix.image.name }}
           path: sbom-${{ matrix.image.name }}.json
