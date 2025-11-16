@@ -21,7 +21,7 @@ def test_non_root_user() -> None:
     remove_previous_container(client)
 
     container = client.containers.run(
-        image, name=CONTAINER_NAME, ports={"80": "8000"}, detach=True
+        image, name=CONTAINER_NAME, ports={"80": "8000"}, detach=True  # type: ignore[call-overload]
     )
     time.sleep(3)
 
@@ -50,7 +50,7 @@ def test_health_check() -> None:
     remove_previous_container(client)
 
     container = client.containers.run(
-        image, name=CONTAINER_NAME, ports={"80": "8000"}, detach=True
+        image, name=CONTAINER_NAME, ports={"80": "8000"}, detach=True  # type: ignore[call-overload]
     )
     time.sleep(5)  # Allow health check to run
 
@@ -82,7 +82,7 @@ def test_file_permissions() -> None:
     remove_previous_container(client)
 
     container = client.containers.run(
-        image, name=CONTAINER_NAME, ports={"80": "8000"}, detach=True
+        image, name=CONTAINER_NAME, ports={"80": "8000"}, detach=True  # type: ignore[call-overload]
     )
     time.sleep(3)
 
@@ -110,7 +110,7 @@ def test_container_labels() -> None:
     remove_previous_container(client)
 
     container = client.containers.run(
-        image, name=CONTAINER_NAME, ports={"80": "8000"}, detach=True
+        image, name=CONTAINER_NAME, ports={"80": "8000"}, detach=True  # type: ignore[call-overload]
     )
     time.sleep(3)
 

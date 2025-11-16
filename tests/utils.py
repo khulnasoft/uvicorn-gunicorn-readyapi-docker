@@ -11,7 +11,7 @@ CONTAINER_NAME = "uvicorn-gunicorn-readyapi-test"
 
 def get_process_names(container: Container) -> List[str]:
     top = container.top()
-    process_commands = [p[7] for p in top["Processes"]]
+    process_commands = [p[7] for p in top["Processes"]]  # type: ignore[index]
     gunicorn_processes = [p for p in process_commands if "gunicorn" in p]
     return gunicorn_processes
 
@@ -27,7 +27,8 @@ def get_gunicorn_conf_path(container: Container) -> str:
 def get_config(container: Container) -> Dict[str, Any]:
     gunicorn_conf = get_gunicorn_conf_path(container)
     result = container.exec_run(f"python {gunicorn_conf}")
-    return json.loads(result.output.decode())
+    config_data = json.loads(result.output.decode())
+    return config_data  # type: ignore[no-any-return]
 
 
 def remove_previous_container(client: DockerClient) -> None:
@@ -39,7 +40,7 @@ def remove_previous_container(client: DockerClient) -> None:
         return None
 
 
-def get_logs(container: DockerClient) -> str:
+def get_logs(container: Container) -> str:
     logs = container.logs()
     return logs.decode("utf-8")
 

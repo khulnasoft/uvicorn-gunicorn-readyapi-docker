@@ -4,6 +4,7 @@ import time
 import docker
 import requests
 from docker.client import DockerClient
+from docker.models.containers import Container
 
 from ..utils import (
     CONTAINER_NAME,
@@ -16,7 +17,7 @@ from ..utils import (
 client = docker.from_env()
 
 
-def verify_container(container: DockerClient, response_text: str) -> None:
+def verify_container(container: Container, response_text: str) -> None:
     response = requests.get("http://127.0.0.1:8000")
     data = response.json()
     assert data["message"] == response_text
@@ -51,7 +52,7 @@ def test_defaults() -> None:
     sleep_time = int(os.getenv("SLEEP_TIME", 1))
     remove_previous_container(client)
     container = client.containers.run(
-        image, name=CONTAINER_NAME, ports={"80": "8000"}, detach=True
+        image, name=CONTAINER_NAME, ports={"80": "8000"}, detach=True  # type: ignore[call-overload]
     )
     time.sleep(sleep_time)
     verify_container(container, response_text)
