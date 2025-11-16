@@ -775,6 +775,7 @@ All the image tags, configurations, environment variables and application option
 
 ### Latest Changes
 
+* ⬆ Bump khulnasoft/latest-changes from 0.3.1 to 0.3.2. PR [#38](https://github.com/khulnasoft/uvicorn-gunicorn-readyapi-docker/pull/38) by [@dependabot[bot]](https://github.com/apps/dependabot).
 * ⬆ Bump readyapi[all] from 0.110.2 to 0.110.3. PR [#21](https://github.com/khulnasoft/uvicorn-gunicorn-readyapi-docker/pull/21) by [@dependabot[bot]](https://github.com/apps/dependabot).
 * Bump uvicorn[standard] from 0.20.0 to 0.29.0. PR [#11](https://github.com/khulnasoft/uvicorn-gunicorn-readyapi-docker/pull/11) by [@dependabot[bot]](https://github.com/apps/dependabot).
 * ⬆ Bump readyapi[all] from 0.109.3 to 0.110.1. PR [#18](https://github.com/khulnasoft/uvicorn-gunicorn-readyapi-docker/pull/18) by [@dependabot[bot]](https://github.com/apps/dependabot).
