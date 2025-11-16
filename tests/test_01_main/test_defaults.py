@@ -45,7 +45,7 @@ def verify_container(container: Container, response_text: str) -> None:
 
 
 def test_defaults() -> None:
-    name = os.getenv("NAME")
+    name = os.getenv("NAME", "python3.11")
     image = f"khulnasoft/uvicorn-gunicorn-readyapi:{name}"
     response_text = get_response_text1()
     sleep_time = int(os.getenv("SLEEP_TIME", 1))
