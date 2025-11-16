@@ -3,7 +3,6 @@ import time
 
 import docker
 import requests
-from docker.client import DockerClient
 from docker.models.containers import Container
 
 from ..utils import (
@@ -52,8 +51,8 @@ def test_defaults() -> None:
     sleep_time = int(os.getenv("SLEEP_TIME", 1))
     remove_previous_container(client)
     container = client.containers.run(
-        image, name=CONTAINER_NAME, ports={"80": "8000"}, detach=True  # type: ignore[call-overload]
-    )
+        image, name=CONTAINER_NAME, ports={"80": "8000"}, detach=True
+    )  # type: ignore[call-overload]
     time.sleep(sleep_time)
     verify_container(container, response_text)
     container.stop()
