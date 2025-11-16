@@ -4,35 +4,28 @@
 
 * [`python3.11`, `latest` _(Dockerfile)_](https://github.com/khulnasoft/uvicorn-gunicorn-readyapi-docker/blob/master/docker-images/python3.11.dockerfile)
 * [`python3.10`, _(Dockerfile)_](https://github.com/khulnasoft/uvicorn-gunicorn-readyapi-docker/blob/master/docker-images/python3.10.dockerfile)
-* [`python3.8`, _(Dockerfile)_](https://github.com/khulnasoft/uvicorn-gunicorn-readyapi-docker/blob/master/docker-images/python3.8.dockerfile)
-* [`python3.7`, _(Dockerfile)_](https://github.com/khulnasoft/uvicorn-gunicorn-readyapi-docker/blob/master/docker-images/python3.7.dockerfile)
 * [`python3.11-slim` _(Dockerfile)_](https://github.com/khulnasoft/uvicorn-gunicorn-readyapi-docker/blob/master/docker-images/python3.11-slim.dockerfile)
 * [`python3.10-slim` _(Dockerfile)_](https://github.com/khulnasoft/uvicorn-gunicorn-readyapi-docker/blob/master/docker-images/python3.10-slim.dockerfile)
-* [`python3.8-slim` _(Dockerfile)_](https://github.com/khulnasoft/uvicorn-gunicorn-readyapi-docker/blob/master/docker-images/python3.8-slim.dockerfile)
 
 ## Deprecated tags
 
 🚨 These tags are no longer supported or maintained, they are removed from the GitHub repository, but the last versions pushed might still be available in Docker Hub if anyone has been pulling them:
 
 * `python3.9`
-* `python3.9-slim`
-* `python3.9-alpine3.14`
-* `python3.8-alpine3.10`
-* `python3.7-alpine3.8`
+* `python3.11-alpine3.19`
+* `python3.10-alpine3.18`
 * `python3.6`
 * `python3.6-alpine3.8`
 
 The last date tags for these versions are:
 
-* `python3.9-alpine3.14-2024-03-11`
-* `python3.8-alpine3.10-2024-01-29`
-* `python3.7-alpine3.8-2024-03-11`
-* `python3.6-2022-11-25`
+* `python3.11-alpine3.19-2024-03-11`
+* `python3.10-alpine3.18-2024-01-29`
 * `python3.6-alpine3.8-2022-11-25`
 
 ---
 
-**Note**: There are [tags for each build date](https://hub.docker.com/r/khulnasoft/uvicorn-gunicorn-readyapi/tags). If you need to "pin" the Docker image version you use, you can select one of those tags. E.g. `khulnasoft/uvicorn-gunicorn-readyapi:python3.7-2019-10-15`.
+**Note**: There are [tags for each build date](https://hub.docker.com/r/khulnasoft/uvicorn-gunicorn-readyapi/tags). If you need to "pin" the Docker image version you use, you can select one of those tags. E.g. `khulnasoft/uvicorn-gunicorn-readyapi:python3.11-2019-10-15`.
 
 # uvicorn-gunicorn-readyapi
 
@@ -897,7 +890,7 @@ Highlights of this release:
 
 ### 0.5.0
 
-* Refactor tests to use env vars and add image tags for each build date, like `khulnasoft/uvicorn-gunicorn-readyapi:python3.7-2019-10-15`. PR [#17](https://github.com/khulnasoft/uvicorn-gunicorn-readyapi-docker/pull/17).
+* Refactor tests to use env vars and add image tags for each build date, like `khulnasoft/uvicorn-gunicorn-readyapi:python3.11-2019-10-15`. PR [#17](https://github.com/khulnasoft/uvicorn-gunicorn-readyapi-docker/pull/17).
 * Upgrade Travis. PR [#9](https://github.com/khulnasoft/uvicorn-gunicorn-readyapi-docker/pull/9).
 
 ### 0.4.0

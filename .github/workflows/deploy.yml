@@ -57,21 +57,12 @@ jobs:
           - name: python3.10
             python_version: "3.10"
             dockerfile: "python3.10"
-          - name: python3.8
-            python_version: "3.8"
-            dockerfile: "python3.8"
-          - name: python3.7
-            python_version: "3.7"
-            dockerfile: "python3.7"
           - name: python3.11-slim
             python_version: "3.11"
             dockerfile: "python3.11-slim"
           - name: python3.10-slim
             python_version: "3.10"
             dockerfile: "python3.10-slim"
-          - name: python3.8-slim
-            python_version: "3.8"
-            dockerfile: "python3.8-slim"
       fail-fast: false
       max-parallel: 3
     runs-on: ubuntu-latest

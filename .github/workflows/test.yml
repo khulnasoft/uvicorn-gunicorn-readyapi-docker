@@ -161,7 +161,6 @@ jobs:
         env:
           NAME: ${{ matrix.image.name }}
           PYTHON_VERSION: ${{ matrix.image.python_version }}
-        if: matrix.image.name != 'python3.8' && matrix.image.name != 'python3.7'
       - name: Upload test results
         uses: actions/upload-artifact@v4
         if: always()
