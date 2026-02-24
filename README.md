@@ -1,4 +1,4 @@
-[![Test](https://github.com/khulnasoft/uvicorn-gunicorn-readyapi-docker/workflows/Test/badge.svg)](https://github.com/khulnasoft/uvicorn-gunicorn-readyapi-docker/actions?query=workflow%3ATest) [![Deploy](https://github.com/khulnasoft/uvicorn-gunicorn-readyapi-docker/workflows/Deploy/badge.svg)](https://github.com/khulnasoft/uvicorn-gunicorn-readyapi-docker/actions?query=workflow%3ADeploy)
+[![Test](https://github.com/khulnasoft/uvicorn-gunicorn-readyapi-docker/actions/workflows/test.yml/badge.svg)](https://github.com/khulnasoft/uvicorn-gunicorn-readyapi-docker/actions/workflows/test.yml) [![Deploy](https://github.com/khulnasoft/uvicorn-gunicorn-readyapi-docker/workflows/Deploy/badge.svg)](https://github.com/khulnasoft/uvicorn-gunicorn-readyapi-docker/actions?query=workflow%3ADeploy)
 
 ## Supported tags and respective `Dockerfile` links
 
@@ -12,23 +12,21 @@
 * [`python3.9-slim` _(Dockerfile)_](https://github.com/khulnasoft/uvicorn-gunicorn-readyapi-docker/blob/master/docker-images/python3.9-slim.dockerfile)
 * [`python3.8-slim` _(Dockerfile)_](https://github.com/khulnasoft/uvicorn-gunicorn-readyapi-docker/blob/master/docker-images/python3.8-slim.dockerfile)
 
-## Discouraged tags
-
-* [`python3.9-alpine3.14` _(Dockerfile)_](https://github.com/khulnasoft/uvicorn-gunicorn-readyapi-docker/blob/master/docker-images/python3.9-alpine3.14.dockerfile)
-* [`python3.8-alpine3.10` _(Dockerfile)_](https://github.com/khulnasoft/uvicorn-gunicorn-readyapi-docker/blob/master/docker-images/python3.8-alpine3.10.dockerfile)
-* [`python3.7-alpine3.8` _(Dockerfile)_](https://github.com/khulnasoft/uvicorn-gunicorn-readyapi-docker/blob/master/docker-images/python3.7-alpine3.8.dockerfile)
-
-To learn more about why Alpine images are discouraged for Python read the note at the end: [🚨 Alpine Python Warning](#-alpine-python-warning).
-
 ## Deprecated tags
 
-🚨 These tags are no longer supported or maintained, they are removed from the GitHub repository, but the last version pushed is still available in Docker Hub.
+🚨 These tags are no longer supported or maintained, they are removed from the GitHub repository, but the last versions pushed might still be available in Docker Hub if anyone has been pulling them:
 
+* `python3.9-alpine3.14`
+* `python3.8-alpine3.10`
+* `python3.7-alpine3.8`
 * `python3.6`
 * `python3.6-alpine3.8`
 
-The last versions with date tags for Python 3.6 are:
+The last date tags for these versions are:
 
+* `python3.9-alpine3.14-2024-03-11`
+* `python3.8-alpine3.10-2024-01-29`
+* `python3.7-alpine3.8-2024-03-11`
 * `python3.6-2022-11-25`
 * `python3.6-alpine3.8-2022-11-25`
 
@@ -38,7 +36,7 @@ The last versions with date tags for Python 3.6 are:
 
 # uvicorn-gunicorn-readyapi
 
-[**Docker**](https://www.docker.com/) image with [**Uvicorn**](https://www.uvicorn.org/) managed by [**Gunicorn**](https://gunicorn.org/) for high-performance [**ReadyAPI**](https://readyapi.khulnasoft.com/) web applications in **[Python](https://www.python.org/)** with performance auto-tuning. Optionally in a slim version or based on Alpine Linux.
+[**Docker**](https://www.docker.com/) image with [**Uvicorn**](https://www.uvicorn.org/) managed by [**Gunicorn**](https://gunicorn.org/) for high-performance [**ReadyAPI**](https://readyapi.khulnasoft.com/) web applications in **[Python](https://www.python.org/)** with performance auto-tuning.
 
 **GitHub repo**: [https://github.com/khulnasoft/uvicorn-gunicorn-readyapi-docker](https://github.com/khulnasoft/uvicorn-gunicorn-readyapi-docker)
 
@@ -143,7 +141,7 @@ This image will set a sensible configuration based on the server it is running o
 
 It has sensible defaults, but you can configure it with environment variables or override the configuration files.
 
-There is also a slim version and another one based on Alpine Linux. If you want one of those, use one of the tags from above.
+There are also slim versions. If you want one of those, use one of the tags from above.
 
 ### `khulnasoft/uvicorn-gunicorn`
 
@@ -777,7 +775,40 @@ All the image tags, configurations, environment variables and application option
 
 ### Latest Changes
 
+#### Docs
+
+* 📝 Add security policy. PR [#283](https://github.com/khulnasoft/uvicorn-gunicorn-readyapi-docker/pull/283) by [@khulnasoft](https://github.com/khulnasoft).
+
+#### Internal
+
+* 🔧 Add GitHub templates for discussions and templates. PR [#281](https://github.com/khulnasoft/uvicorn-gunicorn-readyapi-docker/pull/281) by [@khulnasoft](https://github.com/khulnasoft).
+* 🔧 Update `latest-changes.yml`. PR [#276](https://github.com/khulnasoft/uvicorn-gunicorn-readyapi-docker/pull/276) by [@alejsdev](https://github.com/alejsdev).
+
+### 0.8.0
+
+#### Features
+
+* ✨ Add support for multi-arch builds, including support for arm64 (e.g. Mac M1). PR [#273](https://github.com/khulnasoft/uvicorn-gunicorn-readyapi-docker/pull/273) by [@khulnasoft](https://github.com/khulnasoft).
+
+#### Docs
+
+* 📝 Update test badge in `README.md`. PR [#275](https://github.com/khulnasoft/uvicorn-gunicorn-readyapi-docker/pull/275) by [@alejsdev](https://github.com/alejsdev).
+* 📝 Update test badge in `README.md`. PR [#274](https://github.com/khulnasoft/uvicorn-gunicorn-readyapi-docker/pull/274) by [@alejsdev](https://github.com/alejsdev).
+
+#### Upgrades
+
+* ⬆ Bump gunicorn from 20.1.0 to 21.2.0. PR [#270](https://github.com/khulnasoft/uvicorn-gunicorn-readyapi-docker/pull/270) by [@dependabot[bot]](https://github.com/apps/dependabot).
 * ⬆️ Bump readyapi[all] from 0.87.0 to 0.88.0. PR [#222](https://github.com/khulnasoft/uvicorn-gunicorn-readyapi-docker/pull/222) by [@dependabot[bot]](https://github.com/apps/dependabot).
+
+#### Internal
+
+* ⬆ Update mypy requirement from ^0.991 to ^1.4. PR [#269](https://github.com/khulnasoft/uvicorn-gunicorn-readyapi-docker/pull/269) by [@dependabot[bot]](https://github.com/apps/dependabot).
+* ⬆ Bump actions/checkout from 3 to 4. PR [#266](https://github.com/khulnasoft/uvicorn-gunicorn-readyapi-docker/pull/266) by [@dependabot[bot]](https://github.com/apps/dependabot).
+* ⬆ Bump peter-evans/dockerhub-description from 3 to 4. PR [#267](https://github.com/khulnasoft/uvicorn-gunicorn-readyapi-docker/pull/267) by [@dependabot[bot]](https://github.com/apps/dependabot).
+* ⬆ Bump actions/setup-python from 4.3.0 to 5.0.0. PR [#265](https://github.com/khulnasoft/uvicorn-gunicorn-readyapi-docker/pull/265) by [@dependabot[bot]](https://github.com/apps/dependabot).
+* ⬆ Bump khulnasoft/issue-manager-action from 0.4.0 to 0.5.0. PR [#264](https://github.com/khulnasoft/uvicorn-gunicorn-readyapi-docker/pull/264) by [@dependabot[bot]](https://github.com/apps/dependabot).
+* 👷 Update dependabot. PR [#253](https://github.com/khulnasoft/uvicorn-gunicorn-readyapi-docker/pull/253) by [@khulnasoft](https://github.com/khulnasoft).
+* 👷 Update token for latest changes. PR [#247](https://github.com/khulnasoft/uvicorn-gunicorn-readyapi-docker/pull/247) by [@khulnasoft](https://github.com/khulnasoft).
 * 👷 Add GitHub Action for Docker Hub description. PR [#221](https://github.com/khulnasoft/uvicorn-gunicorn-readyapi-docker/pull/221) by [@khulnasoft](https://github.com/khulnasoft).
 * ⬆️ Update mypy requirement from ^0.971 to ^0.991. PR [#214](https://github.com/khulnasoft/uvicorn-gunicorn-readyapi-docker/pull/214) by [@dependabot[bot]](https://github.com/apps/dependabot).
 * ⬆️ Update autoflake requirement from ^1.3.1 to ^2.0.0. PR [#215](https://github.com/khulnasoft/uvicorn-gunicorn-readyapi-docker/pull/215) by [@dependabot[bot]](https://github.com/apps/dependabot).
@@ -828,7 +859,7 @@ Highlights of this release:
 * ⬆️ Bump actions/checkout from 2 to 3.1.0. PR [#194](https://github.com/khulnasoft/uvicorn-gunicorn-readyapi-docker/pull/194) by [@dependabot[bot]](https://github.com/apps/dependabot).
 * ⬆️ Update mypy requirement from ^0.770 to ^0.971. PR [#184](https://github.com/khulnasoft/uvicorn-gunicorn-readyapi-docker/pull/184) by [@dependabot[bot]](https://github.com/apps/dependabot).
 * ⬆️ Update isort requirement from ^4.3.21 to ^5.8.0. PR [#116](https://github.com/khulnasoft/uvicorn-gunicorn-readyapi-docker/pull/116) by [@dependabot[bot]](https://github.com/apps/dependabot).
-* ⬆️ Bump khulnasoft/issue-manager from 0.2.0 to 0.4.0. PR [#110](https://github.com/khulnasoft/uvicorn-gunicorn-readyapi-docker/pull/110) by [@dependabot[bot]](https://github.com/apps/dependabot).
+* ⬆️ Bump khulnasoft/issue-manager-action from 0.2.0 to 0.4.0. PR [#110](https://github.com/khulnasoft/uvicorn-gunicorn-readyapi-docker/pull/110) by [@dependabot[bot]](https://github.com/apps/dependabot).
 * ⬆️ Bump actions/setup-python from 1 to 4.1.0. PR [#182](https://github.com/khulnasoft/uvicorn-gunicorn-readyapi-docker/pull/182) by [@dependabot[bot]](https://github.com/apps/dependabot).
 * ⬆️ Update pytest requirement from ^5.4.1 to ^7.0.1. PR [#153](https://github.com/khulnasoft/uvicorn-gunicorn-readyapi-docker/pull/153) by [@dependabot[bot]](https://github.com/apps/dependabot).
 * 📌 Add external dependencies and Dependabot to get automatic upgrade PRs. PR [#109](https://github.com/khulnasoft/uvicorn-gunicorn-readyapi-docker/pull/109) by [@khulnasoft](https://github.com/khulnasoft).
